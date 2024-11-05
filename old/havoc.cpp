@@ -1,15 +1,30 @@
+#include <cstdlib>
+#include <sched.h>
 
-
-int main() {
+int main(int argc, char** argv) {
+    unsigned int core = 0;
+    if (argc >= 2) {
+        core = atoi(argv[1]);
+    }
+    cpu_set_t cpus;
+    CPU_ZERO(&cpus);
+    CPU_SET(core, &cpus);
+    sched_setaffinity(0, sizeof(cpu_set_t), &cpus);
 	__asm__ __volatile__ (
-		"movl $1, %edx;"
+//        "jmp init;"
+//        ".align 4096;"
+//        ".rept 2000;"
+//        "nop;"
+//        ".endr;"
+//        "init:"
+        "movl $1, %edx;"
 		"outer:"
 		"movl $0xffffffff, %ecx;"
 		"inner:"
 		"jmp line1;"
 		
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -21,7 +36,7 @@ int main() {
 		"jmp end;"
 
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -29,7 +44,7 @@ int main() {
 		"jmp line3;"
 		
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -37,7 +52,7 @@ int main() {
 		"jmp line4;"
 
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -45,7 +60,7 @@ int main() {
 		"jmp line5;"
 
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -53,7 +68,7 @@ int main() {
 		"jmp line6;"
 
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -61,7 +76,7 @@ int main() {
 		"jmp line7;"
 
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 
@@ -69,7 +84,7 @@ int main() {
 		"jmp line8;"
 
 		".align 4096;"
-		".rept 260;"
+		".rept 1936;"
 		"nop;"
 		".endr;"
 

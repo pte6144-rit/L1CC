@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
+#include <sched.h>
+#include <chrono>
 
 void timer(unsigned int* counter) {
     __asm__ __volatile__ (
@@ -13,25 +15,35 @@ void timer(unsigned int* counter) {
     );
 }
 
-int main() {
+int main(int argc, char** argv) {
+    unsigned int scan = 2;
+    if (argc >= 2) {
+        scan = atoi(argv[1]);
+    }
+    cpu_set_t cpus;
+    CPU_ZERO(&cpus);
+    CPU_SET(0, &cpus);
+    sched_setaffinity(0, sizeof(cpu_set_t), &cpus);
+    CPU_ZERO(&cpus);
+    CPU_SET(1, &cpus);
     unsigned int counter_val = 0;
     unsigned int* counter = &counter_val;
     std::thread worker([counter](){timer(counter);});
-    unsigned int arr[64001];
-    std::cout << "TEST1" << std::endl;
+    pthread_setaffinity_np(worker.native_handle(), sizeof(cpu_set_t), &cpus);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    unsigned int* arr = (unsigned int*)malloc((scan * 64 + 1) * sizeof(unsigned int)); 
     //Register Usage
     //  eax: Iteration Counter
     //  ebx: Output array address (modifies during runtime)
     //  ecx: Counter address
     //  edx: Passthru register
     __asm__ (
-        "movl $1000, %%eax;"
         "movl (%1), %%edx;"
         "movl %%edx, (%0);"
         "add $4, %0;"
         ".align 4096;"
         "L0:"
-		    "jmp L64;"
+            "jmp L64;"
     		".rept 59;"
     		"nop;"
 	    	".endr;"
@@ -2779,19 +2791,19 @@ int main() {
 			"movl (%1), %%edx;"
             "movl %%edx, 252(%0);"
 			"addl $256, %0;"
+            "movl $100, %%edi;"
+            "waste:"
+            "subl $1, %%edi;"
+            "jne waste;"
 			"subl $1, %%eax;"
 			"jne L0;"
-			".rept 35;"
-			"nop;"
-			".endr;"
-		: : "b" ( arr ), "c" ( counter )
+		: : "b" ( arr ), "c" ( counter ), "a" ( scan )
     ); 
 	std::ofstream stream("dat.txt", std::ios::binary);
-	for (int i = 1; i < 64001; i++) {
+	for (int i = 65; i < 64 * scan + 1; i++) {
     	stream << arr[i] - arr[i-1] << " ";
 	    if (i % 64 == 0)
                     stream << std::endl;
 	}
-    std::cout << "TEST2" << std::endl;
     return 0;
 }

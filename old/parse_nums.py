@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 def main(filename, n=64):
 
     with open(filename, 'r') as fp:
-        lats = fp.read().strip()
-        lats = list(map(lambda a: float(a.strip()) if float(a.strip()) <= 600 else 100, lats.split(' ')))
-        print(sum(lats)/len(lats))
+        lats = fp.read().strip().split("\n")
+        lats = map(lambda a: int(a.strip()), lats)
+        lats = map(lambda a: bin(a)[2:], lats)
+        lats = map(lambda a: "0" * (64-len(a)) + a, lats)
+        lats = list(map(lambda a: list(map(int, a)), lats))
     lats = np.reshape(lats, (-1,n))
     lats = lats.transpose()
     print(lats)
